@@ -1,6 +1,6 @@
 import Foundation
 
-let fm   = FileManager.default
+nonisolated(unsafe) let fm = FileManager.default
 let home = URL(fileURLWithPath: NSHomeDirectory())
 
 func findRepoRoot() -> URL {

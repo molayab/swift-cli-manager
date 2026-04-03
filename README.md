@@ -3,7 +3,7 @@
 Manage AI agent skills and slash commands across every tool and machine from a single git repository.
 
 [![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey)](https://www.apple.com/macos/)
-[![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)](https://www.swift.org/)
+[![Swift](https://img.shields.io/badge/Swift-6.2-orange)](https://www.swift.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ---
@@ -42,7 +42,7 @@ Modern development involves several AI coding agents — OpenCode, Claude Code, 
 ## Prerequisites
 
 - macOS 13 or later
-- Swift 5.9+ — bundled with [Xcode 15+](https://developer.apple.com/xcode/) or installable via the [Swift toolchain](https://www.swift.org/install/)
+- Swift 6.2 — bundled with [Xcode 26+](https://developer.apple.com/xcode/) or installable via the [Swift toolchain](https://www.swift.org/install/)
 
 ---
 
