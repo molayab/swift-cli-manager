@@ -6,10 +6,10 @@
 #   curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash
 #
 # Or with options:
-#   curl -fsSL ... | bash -s -- [--dir <path>] [--global] [--version <tag>]
+#   curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash -s -- [--dir <path>] [--global] [--version <tag>]
 #
 # Options:
-#   --dir <path>      Where to create the repo (default: ~/agent-manager)
+#   --dir <path>      Where to create the repo (default: ~/.config/agent-manager/src)
 #   --global          Also install the binary to /usr/local/bin
 #   --version <tag>   Pin to a specific release tag (default: latest)
 
@@ -33,7 +33,7 @@ info() { echo -e "${blue}i${reset} $*"; }
 GITHUB_REPO="molayab/swift-agent-manager"
 
 # ── defaults ───────────────────────────────────────────────────────────────────
-INSTALL_DIR="$HOME/agent-manager"
+INSTALL_DIR="$HOME/.config/agent-manager/src"
 GLOBAL=false
 GLOBAL_BIN="/usr/local/bin"
 RELEASE_VERSION="latest"
@@ -172,5 +172,5 @@ else
 fi
 
 info "To push to your own remote:"
-info "  cd ${INSTALL_DIR} && git remote add origin <your-repo-url> && git push -u origin main"
+info "  cd ~/.config/agent-manager/src && git remote add origin <your-repo-url> && git push -u origin main"
 echo ""

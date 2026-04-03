@@ -57,7 +57,7 @@ Modern development involves several AI coding agents — OpenCode, Claude Code, 
 
 ### Option A — one-liner (no clone required)
 
-Downloads a pre-compiled binary and creates a ready-to-use repo in `~/agent-manager`:
+Downloads a pre-compiled binary and creates a ready-to-use repo at `~/.config/agent-manager/src`:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash
@@ -67,19 +67,19 @@ Install system-wide, pin to a version, or choose a custom directory:
 
 ```sh
 # Install binary to /usr/local/bin as well
-curl -fsSL .../quickinstall.sh | bash -s -- --global
+curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash -s -- --global
 
 # Pin to a specific release
-curl -fsSL .../quickinstall.sh | bash -s -- --version 1.0.4 --global
+curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash -s -- --version 1.0.5 --global
 
 # Custom repo directory
-curl -fsSL .../quickinstall.sh | bash -s -- --dir ~/my-agents
+curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash -s -- --dir ~/my-agents
 ```
 
-The script creates `~/agent-manager/` with `skills/`, `commands/`, a `.gitignore`, and an initial git commit. Point it at your own remote when ready:
+The script creates `~/.config/agent-manager/src/` with `skills/`, `commands/`, a `.gitignore`, and an initial git commit. Point it at your own remote when ready:
 
 ```sh
-cd ~/agent-manager
+cd ~/.config/agent-manager/src
 git remote add origin https://github.com/<you>/my-agents.git
 git push -u origin main
 ```
