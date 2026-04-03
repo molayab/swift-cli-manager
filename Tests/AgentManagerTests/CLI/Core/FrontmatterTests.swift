@@ -9,7 +9,7 @@ struct FrontmatterTests {
     @Test("Extracts each field correctly from a multi-field YAML frontmatter block", arguments: [
         ("name", "My Skill"),
         ("description", "A great skill for testing"),
-        ("version", "1.2.3"),
+        ("version", "1.2.3")
     ])
     func extractsFieldFromFrontmatter(key: String, expected: String) {
         let text = """

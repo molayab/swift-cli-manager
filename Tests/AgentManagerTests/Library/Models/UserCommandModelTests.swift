@@ -84,22 +84,22 @@ struct UserCommandModelTests {
     func resolveAllCommandsWhenFilterIsEmpty() {
         let commands = [
             makeCommand(id: "review", name: "Review"),
-            makeCommand(id: "explain", name: "Explain"),
+            makeCommand(id: "explain", name: "Explain")
         ]
         let resolved = UserCommandModel.resolveUserCommands([], from: commands)
         #expect(resolved.count == commands.count)
     }
 
     @Test("Filters commands by id, by name, by both, or returns nothing for unknown terms", arguments: [
-        (["review"],           1),   // match by id
-        (["Review"],           1),   // match by name (case-sensitive exact match)
-        (["unknown"],          0),   // no match
-        (["review", "explain"], 2),  // match multiple
+        (["review"], 1),   // match by id
+        (["Review"], 1),   // match by name (case-sensitive exact match)
+        (["unknown"], 0),   // no match
+        (["review", "explain"], 2)  // match multiple
     ])
     func resolveCommandsByIdOrName(filter: [String], expectedCount: Int) {
         let commands = [
             makeCommand(id: "review", name: "Review"),
-            makeCommand(id: "explain", name: "Explain"),
+            makeCommand(id: "explain", name: "Explain")
         ]
         #expect(UserCommandModel.resolveUserCommands(filter, from: commands).count == expectedCount)
     }
