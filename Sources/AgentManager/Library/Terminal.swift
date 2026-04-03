@@ -2,6 +2,9 @@
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+// Capture stdout at module-init time so the mutable C global is only
+// accessed once, outside any Swift concurrency context.
+nonisolated(unsafe) private let _stdout = stdout
 #endif
 import Foundation
 
@@ -32,7 +35,6 @@ func selectInteractive<T>(prompt: String, items: [T], display: (T) -> String) ->
     print()
     print("\(bold)>\(reset) ", terminator: "")
     #if canImport(Glibc)
-    nonisolated(unsafe) let _stdout = stdout
     fflush(_stdout)
     #else
     fflush(stdout)
