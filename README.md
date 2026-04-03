@@ -5,6 +5,8 @@ Manage AI agent skills and slash commands across every tool and machine from a s
 [![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-6.2-orange)](https://www.swift.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![CI](https://github.com/molayab/swift-agent-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/molayab/swift-agent-manager/actions/workflows/ci.yml)
+[![Release](https://github.com/molayab/swift-agent-manager/actions/workflows/release.yml/badge.svg)](https://github.com/molayab/swift-agent-manager/actions/workflows/release.yml)
 
 ---
 
