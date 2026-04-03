@@ -14,8 +14,7 @@ struct SkillModel {
 
         return entries
             .filter { url in
-                var isDir: ObjCBool = false
-                return fm.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
+                (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
                     && fm.fileExists(atPath: url.appendingPathComponent("SKILL.md").path)
             }
             .map { dir in

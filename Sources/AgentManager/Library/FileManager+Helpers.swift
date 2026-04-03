@@ -3,10 +3,17 @@ import Foundation
 nonisolated(unsafe) let fm = FileManager.default
 let home = URL(fileURLWithPath: NSHomeDirectory())
 
+/// Expands a leading `~` to the current user's home directory.
+/// Replaces `(str as NSString).expandingTildeInPath`, which requires the ObjC runtime.
+private func expandingTilde(in path: String) -> String {
+    guard path.hasPrefix("~") else { return path }
+    return NSHomeDirectory() + path.dropFirst()
+}
+
 func findRepoRoot() -> URL {
     // 1. Explicit environment override — useful in CI or multi-repo setups.
     if let envPath = ProcessInfo.processInfo.environment["AGENT_MANAGER_REPO"] {
-        let url = URL(fileURLWithPath: (envPath as NSString).expandingTildeInPath)
+        let url = URL(fileURLWithPath: expandingTilde(in: envPath))
         if fm.fileExists(atPath: url.path) {
             return url
         }
@@ -20,7 +27,7 @@ func findRepoRoot() -> URL {
     if let saved = try? String(contentsOf: configFile, encoding: .utf8) {
         let trimmed = saved.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty {
-            let url = URL(fileURLWithPath: (trimmed as NSString).expandingTildeInPath)
+            let url = URL(fileURLWithPath: expandingTilde(in: trimmed))
             if fm.fileExists(atPath: url.path) {
                 return url
             }
@@ -47,6 +54,5 @@ func isSymlink(_ url: URL) -> Bool {
 }
 
 func isDirectory(_ url: URL) -> Bool {
-    var isDir: ObjCBool = false
-    return fm.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
+    (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
 }
