@@ -5,7 +5,7 @@ struct CLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "agent-manager",
         abstract: "Personal AI agent configuration manager — skills, commands, and git.",
-        version: "1.0.6 (2026/04/03-19:22)",
+        version: "1.0.6",
         subcommands: [
             Skills.self,
             Commands.self,

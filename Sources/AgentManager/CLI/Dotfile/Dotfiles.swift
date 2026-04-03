@@ -9,6 +9,7 @@ struct Dotfiles: ParsableCommand {
             DotfileLink.self,
             DotfileUnlink.self,
             DotfileNew.self,
+            DotfileImport.self,
             DotfileStatus.self,
             DotfilePrivate.self
         ],
