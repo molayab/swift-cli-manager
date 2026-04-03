@@ -1,4 +1,19 @@
+# Swift build artifacts
 .build/
-.DS_Store
 *.o
 *.d
+
+# SwiftPM Xcode integration
+.swiftpm/xcode/
+xcuserdata/
+DerivedData/
+
+# Local binary (installed by install.sh without --global)
+bin/
+
+# macOS
+.DS_Store
+
+# Private skills and commands (local only, never committed)
+skills/*.private/
+commands/*.private.md

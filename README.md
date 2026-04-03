@@ -1,88 +1,304 @@
-# my-skills
+# agent-manager
 
-Personal AI agent skills manager, written in Swift.
+Manage AI agent skills and slash commands across every tool and machine from a single git repository.
 
-Compatible with **OpenCode**, **Claude Code**, **GitHub Copilot**, **Cursor**, **Cline**, and more.
+[![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey)](https://www.apple.com/macos/)
+[![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)](https://www.swift.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Run
+---
+
+Modern development involves several AI coding agents — OpenCode, Claude Code, GitHub Copilot, Cursor, Windsurf, and more. Each stores its skills and slash commands in its own local directory. The result:
+
+- The same prompt exists in five different places, each slightly out of sync
+- A fix to a system prompt must be applied manually to every agent
+- Nothing is versioned, so configuration is lost when you reformat or switch machines
+- There is no way to share useful prompts with teammates or the community
+
+`agent-manager` fixes this with a single git repo as the source of truth. Skills and commands live here. The tool creates symlinks into each agent's configuration directory so every agent picks them up. Update a file once — every agent sees the change.
+
+---
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Repository Layout](#repository-layout)
+- [Adding Skills and Commands](#adding-skills-and-commands)
+- [Installing Skills from GitHub](#installing-skills-from-github)
+- [Importing Commands from Agents](#importing-commands-from-agents)
+- [Public, Private, or Mixed](#public-private-or-mixed)
+- [Syncing Across Machines](#syncing-across-machines)
+- [Command Reference](#command-reference)
+- [Supported Agents](#supported-agents)
+- [Skill Format](#skill-format)
+- [Command Format](#command-format)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Prerequisites
+
+- macOS 13 or later
+- Swift 5.9+ — bundled with [Xcode 15+](https://developer.apple.com/xcode/) or installable via the [Swift toolchain](https://www.swift.org/install/)
+
+---
+
+## Installation
+
+Clone your fork (or this repo) and build the binary:
 
 ```sh
-swift run skills <command>
+git clone https://github.com/<you>/agent-manager ~/agent-manager
+cd ~/agent-manager
+
+# Install to ./bin/agent-manager (local)
+bash install.sh
+
+# Or install to /usr/local/bin/agent-manager (available system-wide)
+bash install.sh --global
 ```
 
-## Commands
+Examples throughout this README assume a global install. If you installed locally, replace `agent-manager` with `./bin/agent-manager`.
 
-| Command | Description |
-|---------|-------------|
-| `activate` | Symlink skills into agent directories |
-| `deactivate` | Remove skills from agent directories |
-| `new <name>` | Scaffold a new skill |
-| `list` | List all skills in this repo |
-| `status` | Show activation status per agent |
+---
 
-## Options
+## Quick Start
+
+```sh
+# Symlink all skills into every detected agent
+agent-manager skill activate
+
+# Symlink all slash commands into every detected agent
+agent-manager command activate
+```
+
+Both commands detect which agents are installed on your machine and only target those. Use flags to narrow scope:
+
+```sh
+agent-manager skill activate -a opencode        # one agent
+agent-manager skill activate -s swiftui-pro     # one skill
+agent-manager skill activate --dry-run          # preview without making changes
+```
+
+---
+
+## Repository Layout
+
+```
+skills/      ← skill context files, one directory per skill
+commands/    ← slash command markdown files
+Sources/     ← Swift CLI source (the agent-manager binary)
+```
+
+---
+
+## Adding Skills and Commands
+
+Scaffold a new file, edit it, then activate:
+
+```sh
+agent-manager skill new "my-skill"     # creates skills/my-skill/SKILL.md
+agent-manager command new "deploy"     # creates commands/deploy.md
+```
+
+After editing the generated file:
+
+```sh
+agent-manager skill activate -s my-skill
+agent-manager command activate -c deploy
+```
+
+---
+
+## Installing Skills from GitHub
+
+Any public GitHub repository that follows the `skills/<name>/SKILL.md` layout works as a source:
+
+```sh
+# Interactive picker — browse the full remote catalogue
+agent-manager skill install rudrankriyam/app-store-connect-cli-skills
+
+# Install a specific skill by name
+agent-manager skill install rudrankriyam/app-store-connect-cli-skills asc-build-lifecycle
+
+# Overwrite a skill that already exists locally
+agent-manager skill install rudrankriyam/app-store-connect-cli-skills asc-build-lifecycle --force
+
+# Activate after installing
+agent-manager skill activate
+```
+
+> **Rate limits** — unauthenticated GitHub API requests are limited to 60/hour. Set `GITHUB_TOKEN` in your environment to raise this limit:
+>
+> ```sh
+> export GITHUB_TOKEN=ghp_…
+> agent-manager skill install rudrankriyam/app-store-connect-cli-skills
+> ```
+
+---
+
+## Importing Commands from Agents
+
+Copy `.md` command files from agent directories on your machine into the repo's `commands/` folder, so they can be versioned and activated across all agents:
+
+```sh
+agent-manager command import              # interactive picker
+agent-manager command import -a opencode  # specific agent only
+agent-manager command import --force      # overwrite existing files
+```
+
+Only markdown-format agents are supported (OpenCode, Claude Code, Windsurf). TOML-based agents such as Gemini CLI are skipped.
+
+---
+
+## Public, Private, or Mixed
+
+### Fully public repo
+
+Commit everything. Your skills and commands are openly shareable. Others can install them with `skill install`.
+
+### Fully private repo
+
+Keep the repository private on GitHub. Nothing is shared. All tooling works identically.
+
+### Mixed — public repo with private files
+
+The most common setup. The repo is public, but individual skills or commands that are personal or work-specific are marked private. They are git-ignored and never leave your machine; everything else is shared.
+
+Use the `.private` naming convention:
+
+| Item | On disk | Symlinked as |
+|---|---|---|
+| Private skill | `skills/my-skill.private/` | `<agent>/skills/my-skill` |
+| Private command | `commands/my-cmd.private.md` | `<agent>/commands/my-cmd.md` |
+
+The `skill private` and `command private` subcommands toggle a file between private and public — renaming it and repairing any active symlinks automatically:
+
+```sh
+# Make a skill private (git-ignored)
+agent-manager skill private swiftui-pro
+# skills/swiftui-pro/ → skills/swiftui-pro.private/
+
+# Make a command private (git-ignored)
+agent-manager command private commit
+# commands/commit.md → commands/commit.private.md
+
+# Toggle back to public
+agent-manager skill private swiftui-pro
+```
+
+You can also create private files directly using the `.private` naming convention — no toggle step required.
+
+---
+
+## Syncing Across Machines
+
+```sh
+agent-manager push -m "add deploy command"   # stage all changes, commit, and push
+agent-manager pull                           # pull latest on another machine
+agent-manager clean                          # remove dead symlinks
+```
+
+`clean` is useful after deleting, renaming, or moving skills and commands. It scans every known agent directory and removes any symlink whose target no longer exists:
+
+```sh
+agent-manager clean           # remove dead symlinks
+agent-manager clean --dry-run # preview without removing
+```
+
+---
+
+## Command Reference
+
+### `skill` — Manage agent skills
+
+| Subcommand | Description |
+|---|---|
+| `skill install <owner/repo> [name…]` | Install skills from any GitHub repository into this repo |
+| `skill activate` | Symlink skills into agent directories |
+| `skill deactivate` | Remove skill symlinks from agent directories |
+| `skill private <name>` | Toggle a skill between private (git-ignored) and public |
+| `skill new <name>` | Scaffold a new skill |
+| `skill list` | List all skills in this repo |
+| `skill status` | Show activation status per agent |
+
+**Options for `activate`, `deactivate`, `sync`:**
 
 | Flag | Description |
-|------|-------------|
+|---|---|
 | `-s, --skill <name>` | Target a specific skill (repeatable) |
 | `-a, --agent <id>` | Target a specific agent (repeatable) |
 | `--dry-run` | Preview changes without applying them |
 
-## Examples
+**Options for `install`:**
 
-```sh
-# Activate all skills to all detected agents
-swift run skills activate
+| Flag | Description |
+|---|---|
+| `--force` | Overwrite an existing local skill |
 
-# Target one agent
-swift run skills activate -a cline
+---
 
-# Activate a single skill
-swift run skills activate -s swiftui-pro
+### `command` — Manage slash commands
 
-# Preview without making changes
-swift run skills activate --dry-run
+| Subcommand | Description |
+|---|---|
+| `command import` | Copy commands from agent directories into this repo |
+| `command activate` | Install slash commands into agent directories |
+| `command deactivate` | Remove command symlinks from agent directories |
+| `command private <name>` | Toggle a command between private (git-ignored) and public |
+| `command new <name>` | Scaffold a new slash command |
+| `command list` | List all commands in this repo |
+| `command status` | Show activation status per agent |
 
-# Deactivate a skill
-swift run skills deactivate -s swift-testing-pro
+**Options for `import`:**
 
-# Create a new skill
-swift run skills new "my-skill"
+| Flag | Description |
+|---|---|
+| `-a, --agent <id>` | Target a specific agent (repeatable) |
+| `--force` | Overwrite an existing local command |
 
-# Check what's installed where
-swift run skills status
-```
+**Options for `activate`, `deactivate`:**
 
-## Install the binary (optional)
+| Flag | Description |
+|---|---|
+| `-c, --command <name>` | Target a specific command (repeatable) |
+| `-a, --agent <id>` | Target a specific agent (repeatable) |
+| `--dry-run` | Preview changes without applying them |
 
-Build a release binary and put it on your PATH so you can run `skills` directly:
+---
 
-```sh
-swift build -c release
-cp .build/release/skills /usr/local/bin/skills
+### Global commands
 
-# Then use it from anywhere:
-skills activate
-skills status
-skills new "my-skill"
-```
+| Command | Description |
+|---|---|
+| `clean` | Remove dead symlinks from all agent directories |
+| `sync` | Convert plain-copy skills into symlinks |
+| `repo` | Show git status, or initialise a repository |
+| `push [-m <message>]` | Stage all changes, commit, and push |
+| `pull` | Pull latest changes from remote |
 
-## Adding a skill
+---
 
-Either use `new`:
+## Supported Agents
 
-```sh
-swift run skills new "my-skill"
-# → creates skills/my-skill/SKILL.md
-```
+| Agent | Skills | Commands |
+|---|---|---|
+| OpenCode | `~/.config/opencode/skills` | `~/.config/opencode/commands` |
+| Claude Code | `~/.claude/skills` | `~/.claude/commands` |
+| GitHub Copilot | `~/.copilot/skills` | — |
+| Cursor | `~/.cursor/skills` | — |
+| Windsurf | `~/.codeium/windsurf/skills` | `~/.codeium/windsurf/global_workflows` |
+| Gemini CLI | `~/.gemini/skills` | `~/.gemini/commands` (TOML) |
+| Codex | `~/.codex/skills` | — |
 
-Or create a directory manually under `skills/` with a `SKILL.md`:
+Only agents whose directory already exists on disk are offered in the interactive picker.
 
-```
-skills/
-└── my-skill/
-    └── SKILL.md
-```
+---
+
+## Skill Format
 
 `SKILL.md` requires YAML frontmatter with `name` and `description`:
 
@@ -94,11 +310,38 @@ description: What this skill does and when the agent should use it.
 
 # My Skill
 
-Instructions for the agent...
+Instructions for the agent…
 ```
 
-Then activate it:
+---
 
-```sh
-swift run skills activate -s my-skill
+## Command Format
+
+`commands/name.md` uses a `description` frontmatter field and `$ARGUMENTS` as a placeholder for whatever the user types after the slash command:
+
+```markdown
+---
+description: Review the given file or diff for issues.
+---
+
+Review the following for correctness, style, and potential bugs:
+
+$ARGUMENTS
 ```
+
+---
+
+## Contributing
+
+Contributions are welcome. Please open an issue first to discuss any significant change before submitting a pull request.
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes — a clean build (`swift build`) and zero SwiftLint violations (`swiftlint lint --quiet Sources/`) are required
+4. Open a pull request against `main`
+
+---
+
+## License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.

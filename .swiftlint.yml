@@ -1,0 +1,7 @@
+excluded:
+  - .build
+
+identifier_name:
+  excluded:
+    - fm
+    - id
