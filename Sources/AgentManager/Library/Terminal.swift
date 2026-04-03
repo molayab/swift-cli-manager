@@ -1,10 +1,10 @@
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
-import Glibc
-// Capture stdout at module-init time so the mutable C global is only
-// accessed once, outside any Swift concurrency context.
-nonisolated(unsafe) private let _stdout = stdout
+// @preconcurrency suppresses strict-concurrency errors for C globals (e.g. stdout)
+// that predate Swift concurrency. Must appear before Foundation, which transitively
+// imports Glibc on Linux and would otherwise trigger the check first.
+@preconcurrency import Glibc
 #endif
 import Foundation
 
@@ -34,11 +34,7 @@ func selectInteractive<T>(prompt: String, items: [T], display: (T) -> String) ->
     }
     print()
     print("\(bold)>\(reset) ", terminator: "")
-    #if canImport(Glibc)
-    fflush(_stdout)
-    #else
     fflush(stdout)
-    #endif
 
     let input = (readLine() ?? "").trimmingCharacters(in: .whitespaces)
     guard !input.isEmpty, input.lowercased() != "all" else {
