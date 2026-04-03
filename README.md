@@ -25,6 +25,8 @@ Modern development involves several AI coding agents — OpenCode, Claude Code, 
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+  - [Option A — one-liner](#option-a--one-liner-no-clone-required)
+  - [Option B — clone and install](#option-b--clone-and-install)
   - [How the binary locates the repo](#how-the-binary-locates-the-repo)
 - [Quick Start](#quick-start)
 - [Repository Layout](#repository-layout)
@@ -53,34 +55,57 @@ Modern development involves several AI coding agents — OpenCode, Claude Code, 
 
 ## Installation
 
-Clone your fork (or this repo), then choose how to install:
+### Option A — one-liner (no clone required)
+
+Downloads a pre-compiled binary and creates a ready-to-use repo in `~/agent-manager`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/molayab/swift-agent-manager/main/quickinstall.sh | bash
+```
+
+Install system-wide, pin to a version, or choose a custom directory:
+
+```sh
+# Install binary to /usr/local/bin as well
+curl -fsSL .../quickinstall.sh | bash -s -- --global
+
+# Pin to a specific release
+curl -fsSL .../quickinstall.sh | bash -s -- --version 1.0.4 --global
+
+# Custom repo directory
+curl -fsSL .../quickinstall.sh | bash -s -- --dir ~/my-agents
+```
+
+The script creates `~/agent-manager/` with `skills/`, `commands/`, a `.gitignore`, and an initial git commit. Point it at your own remote when ready:
+
+```sh
+cd ~/agent-manager
+git remote add origin https://github.com/<you>/my-agents.git
+git push -u origin main
+```
+
+### Option B — clone and install
+
+Clone your fork (or this repo), then choose how to build or download:
 
 ```sh
 git clone https://github.com/<you>/agent-manager ~/agent-manager
 cd ~/agent-manager
 ```
 
-**Option A — download a pre-compiled binary** (no Swift toolchain required):
+**Download a pre-compiled binary** (no Swift toolchain required):
 
 ```sh
-# Latest release, install to ./bin/
-bash install.sh --binary
-
-# Latest release, install system-wide
-bash install.sh --binary --global
-
-# Pin to a specific release tag
-bash install.sh --binary --version 1.0.2 --global
+bash install.sh --binary            # install to ./bin/
+bash install.sh --binary --global   # install to /usr/local/bin
+bash install.sh --binary --version 1.0.4 --global
 ```
 
-**Option B — build from source** (requires Swift 6.2):
+**Build from source** (requires Swift 6.2):
 
 ```sh
-# Install to ./bin/agent-manager
-bash install.sh
-
-# Install to /usr/local/bin/agent-manager (system-wide)
-bash install.sh --global
+bash install.sh            # install to ./bin/
+bash install.sh --global   # install to /usr/local/bin
 ```
 
 Examples throughout this README assume a global install. If you installed locally, replace `agent-manager` with `./bin/agent-manager`.
