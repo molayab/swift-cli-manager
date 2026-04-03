@@ -34,7 +34,10 @@ struct CommandImport: ParsableCommand {
                 return match
             }
         }
-        guard !targets.isEmpty else { fail("No agents selected."); return }
+        guard !targets.isEmpty else {
+            fail("No agents selected.")
+            return
+        }
 
         try fm.createDirectory(at: commandsDir, withIntermediateDirectories: true)
 

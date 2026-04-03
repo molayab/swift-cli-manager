@@ -9,7 +9,10 @@ struct SkillList: ParsableCommand {
 
     func run() throws {
         let skills = SkillModel.loadSkills()
-        guard !skills.isEmpty else { warn("No skills found in skills/"); return }
+        guard !skills.isEmpty else {
+            warn("No skills found in skills/")
+            return
+        }
 
         let agents = detectedAgents()
         print("\n\(bold)Skills\(reset) \(gray)(\(skills.count))\(reset)\n")

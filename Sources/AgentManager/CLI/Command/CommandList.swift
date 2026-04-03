@@ -9,7 +9,10 @@ struct CommandList: ParsableCommand {
 
     func run() throws {
         let cmds = UserCommandModel.loadCommands()
-        guard !cmds.isEmpty else { warn("No commands found in commands/"); return }
+        guard !cmds.isEmpty else {
+            warn("No commands found in commands/")
+            return
+        }
 
         let agents = CommandModel.detectedCommandAgents()
         print("\n\(bold)Commands\(reset) \(gray)(\(cmds.count))\(reset)\n")

@@ -17,7 +17,10 @@ struct Push: ParsableCommand {
         }
 
         let add = GitRunner.run("add", ".")
-        guard add.exitCode == 0 else { fail("git add failed."); return }
+        guard add.exitCode == 0 else {
+            fail("git add failed.")
+            return
+        }
 
         let staged = GitRunner.run("diff", "--cached", "--quiet")
         if staged.exitCode == 0 {

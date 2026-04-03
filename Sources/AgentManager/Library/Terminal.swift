@@ -16,7 +16,9 @@ func skip(_ message: String) { print("\(gray)−\(reset) \(message)") }
 /// Prompts the user to pick from a numbered list.
 /// Falls back to selecting all items when not running in a TTY (e.g. piped input).
 func selectInteractive<T>(prompt: String, items: [T], display: (T) -> String) -> [T] {
-    guard isTTY else { return items }
+    guard isTTY else {
+        return items
+    }
 
     print("\n\(bold)\(prompt)\(reset)  \(gray)(comma-separated numbers, or enter for all)\(reset)\n")
     for (index, item) in items.enumerated() {
@@ -27,7 +29,9 @@ func selectInteractive<T>(prompt: String, items: [T], display: (T) -> String) ->
     fflush(stdout)
 
     let input = (readLine() ?? "").trimmingCharacters(in: .whitespaces)
-    guard !input.isEmpty, input.lowercased() != "all" else { return items }
+    guard !input.isEmpty, input.lowercased() != "all" else {
+        return items
+    }
 
     let selected = input
         .split(separator: ",")

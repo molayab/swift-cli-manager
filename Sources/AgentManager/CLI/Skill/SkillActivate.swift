@@ -14,12 +14,18 @@ struct SkillActivate: ParsableCommand {
 
     func run() throws {
         let allSkills = SkillModel.loadSkills()
-        guard !allSkills.isEmpty else { fail("No skills found in skills/"); return }
+        guard !allSkills.isEmpty else {
+            fail("No skills found in skills/")
+            return
+        }
 
         let skills: [SkillModel] = filter.skill.isEmpty
             ? selectInteractive(prompt: "Select skills to activate", items: allSkills, display: \.name)
         : SkillModel.resolveSkills(filter.skill, from: allSkills)
-        guard !skills.isEmpty else { fail("No matching skills."); return }
+        guard !skills.isEmpty else {
+            fail("No matching skills.")
+            return
+        }
 
         let targets: [Agent]
         if filter.agent.isEmpty {
@@ -31,10 +37,15 @@ struct SkillActivate: ParsableCommand {
             }
             targets = selectInteractive(prompt: "Select agents", items: detected, display: \.name)
         } else {
-            guard let resolvedTargets = resolveTargets(filter.agent) else { return }
+            guard let resolvedTargets = resolveTargets(filter.agent) else {
+                return
+            }
             targets = resolvedTargets
         }
-        guard !targets.isEmpty else { fail("No agents selected."); return }
+        guard !targets.isEmpty else {
+            fail("No agents selected.")
+            return
+        }
 
         print("\n\(bold)Activating \(skills.count) skill(s) → \(targets.count) agent(s)\(reset)"
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")

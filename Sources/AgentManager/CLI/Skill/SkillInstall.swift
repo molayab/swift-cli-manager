@@ -31,7 +31,10 @@ struct SkillInstall: AsyncParsableCommand {
             fail("Could not reach \(repo): \(error.localizedDescription)")
             return
         }
-        guard !remote.isEmpty else { fail("No skills found in \(repo)."); return }
+        guard !remote.isEmpty else {
+            fail("No skills found in \(repo).")
+            return
+        }
 
         let selected: [RemoteEntry]
         if names.isEmpty {
@@ -49,7 +52,10 @@ struct SkillInstall: AsyncParsableCommand {
                 return match
             }
         }
-        guard !selected.isEmpty else { fail("No skills selected."); return }
+        guard !selected.isEmpty else {
+            fail("No skills selected.")
+            return
+        }
 
         print("\n\(bold)Installing \(selected.count) skill(s) → \(skillsDir.path)\(reset)\n")
 
@@ -103,7 +109,9 @@ struct SkillInstall: AsyncParsableCommand {
     private func handleEntry(_ entry: RemoteEntry, in dest: URL) async throws {
         switch entry.type {
         case "file":
-            guard let downloadURL = entry.downloadURL else { return }
+            guard let downloadURL = entry.downloadURL else {
+                return
+            }
             let data = try await fetch(downloadURL)
             try data.write(to: dest.appendingPathComponent(entry.name))
         case "dir":

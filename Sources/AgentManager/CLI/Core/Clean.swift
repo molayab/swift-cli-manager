@@ -41,14 +41,18 @@ struct Clean: ParsableCommand {
     // MARK: - Helpers
 
     private func scanDir(_ dir: URL, label: String) throws -> (dead: Int, removed: Int) {
-        guard isDirectory(dir) else { return (0, 0) }
+        guard isDirectory(dir) else {
+            return (0, 0)
+        }
         let entries = (try? fm.contentsOfDirectory(
             at: dir.resolvingSymlinksInPath(),
             includingPropertiesForKeys: nil
         )) ?? []
 
         let dead = entries.filter { isDeadSymlink($0) }
-        guard !dead.isEmpty else { return (0, 0) }
+        guard !dead.isEmpty else {
+            return (0, 0)
+        }
 
         print("  \(bold)\(label)\(reset)  \(gray)\(dir.path)\(reset)")
         var removed = 0

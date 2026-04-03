@@ -1,6 +1,10 @@
 excluded:
   - .build
 
+opt_in_rules:
+  - operator_usage_whitespace
+  - conditional_returns_on_newline
+
 identifier_name:
   excluded:
     - fm

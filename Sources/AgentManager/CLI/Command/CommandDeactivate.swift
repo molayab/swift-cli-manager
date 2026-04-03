@@ -18,12 +18,18 @@ struct CommandDeactivate: ParsableCommand {
 
     func run() throws {
         let allCmds = UserCommandModel.loadCommands()
-        guard !allCmds.isEmpty else { fail("No commands found in commands/"); return }
+        guard !allCmds.isEmpty else {
+            fail("No commands found in commands/")
+            return
+        }
 
         let cmds: [UserCommandModel] = command.isEmpty
             ? selectInteractive(prompt: "Select commands to deactivate", items: allCmds, display: { "/\($0.id)" })
         : UserCommandModel.resolveUserCommands(command, from: allCmds)
-        guard !cmds.isEmpty else { fail("No matching commands."); return }
+        guard !cmds.isEmpty else {
+            fail("No matching commands.")
+            return
+        }
 
         let targets: [CommandModel]
         if agent.isEmpty {
@@ -35,10 +41,15 @@ struct CommandDeactivate: ParsableCommand {
             }
             targets = selectInteractive(prompt: "Select agents", items: detected, display: \.name)
         } else {
-            guard let resolvedTargets = CommandModel.resolveCommandAgents(agent) else { return }
+            guard let resolvedTargets = CommandModel.resolveCommandAgents(agent) else {
+                return
+            }
             targets = resolvedTargets
         }
-        guard !targets.isEmpty else { fail("No agents selected."); return }
+        guard !targets.isEmpty else {
+            fail("No agents selected.")
+            return
+        }
 
         print("\n\(bold)Deactivating \(cmds.count) command(s) from \(targets.count) agent(s)\(reset)"
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")

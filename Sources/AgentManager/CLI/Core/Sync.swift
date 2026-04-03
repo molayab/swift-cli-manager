@@ -13,8 +13,13 @@ struct Sync: ParsableCommand {
 
     func run() throws {
         let skills = SkillModel.resolveSkills(filter.skill, from: SkillModel.loadSkills())
-        guard !skills.isEmpty else { fail("No matching skills."); return }
-        guard let targets = resolveTargets(filter.agent) else { return }
+        guard !skills.isEmpty else {
+            fail("No matching skills.")
+            return
+        }
+        guard let targets = resolveTargets(filter.agent) else {
+            return
+        }
 
         print("\n\(bold)Syncing \(skills.count) skill(s) across \(targets.count) agent(s)\(reset)"
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")

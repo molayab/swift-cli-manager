@@ -12,7 +12,9 @@ enum Frontmatter {
 
     static func stripFrontmatter(_ text: String) -> String {
         let lines = text.components(separatedBy: "\n")
-        guard !lines.isEmpty, lines[0].trimmingCharacters(in: .whitespaces) == "---" else { return text }
+        guard !lines.isEmpty, lines[0].trimmingCharacters(in: .whitespaces) == "---" else {
+            return text
+        }
         for index in 1..<lines.count where lines[index].trimmingCharacters(in: .whitespaces) == "---" {
             return lines[(index + 1)...].joined(separator: "\n").trimmingCharacters(in: .newlines)
         }
