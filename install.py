@@ -20,10 +20,12 @@ Options:
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 # quickinstall.py lives alongside this script and contains all shared
@@ -161,6 +163,23 @@ def install_from_github(version: str, local_install: bool, global_install: bool)
 
 # ── Build from source ──────────────────────────────────────────────────────────
 
+APP_SWIFT = SCRIPT_DIR / "Sources" / "AgentManager" / "App.swift"
+_VERSION_RE = re.compile(r'(version:\s*")([^"]+)(")')
+
+
+def stamp_version(build_date: str) -> str:
+    """Append build date to the version string in App.swift. Returns original text."""
+    original = APP_SWIFT.read_text()
+    stamped = _VERSION_RE.sub(lambda m: f'{m.group(1)}{m.group(2)} ({build_date}){m.group(3)}', original, count=1)
+    APP_SWIFT.write_text(stamped)
+    return original
+
+
+def restore_version(original: str) -> None:
+    """Restore App.swift to its original content."""
+    APP_SWIFT.write_text(original)
+
+
 def install_from_source(local_install: bool, global_install: bool) -> None:
     swift = shutil.which("swift")
     if not swift:
@@ -174,21 +193,27 @@ def install_from_source(local_install: bool, global_install: bool) -> None:
     result = subprocess.run([swift, "--version"], capture_output=True, text=True)
     swift_version = result.stdout.splitlines()[0] if result.stdout else "unknown"
 
+    build_date = datetime.now().strftime("%Y/%m/%d-%H:%M")
+
     print()
     print(f"{BOLD}Building agent-manager…{RESET}  {GRAY}{swift_version}{RESET}")
     print()
 
-    # Stream build output indented for visual grouping.
-    process = subprocess.Popen(
-        [swift, "build", "-c", "release"],
-        cwd=SCRIPT_DIR,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
-    for line in process.stdout or []:
-        print("  " + line, end="")
-    process.wait()
+    original = stamp_version(build_date)
+    try:
+        # Stream build output indented for visual grouping.
+        process = subprocess.Popen(
+            [swift, "build", "-c", "release"],
+            cwd=SCRIPT_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        for line in process.stdout or []:
+            print("  " + line, end="")
+        process.wait()
+    finally:
+        restore_version(original)
 
     if process.returncode != 0:
         fail("Build failed.")
