@@ -1,5 +1,5 @@
 #if canImport(Darwin)
-import Darwin
+@preconcurrency import Darwin
 #elseif canImport(Glibc)
 // @preconcurrency suppresses strict-concurrency errors for C globals (e.g. stdout)
 // that predate Swift concurrency. Must appear before Foundation, which transitively

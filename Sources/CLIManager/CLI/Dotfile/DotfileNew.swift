@@ -1,3 +1,8 @@
+#if canImport(Darwin)
+@preconcurrency import Darwin
+#elseif canImport(Glibc)
+@preconcurrency import Glibc
+#endif
 import ArgumentParser
 import Foundation
 
