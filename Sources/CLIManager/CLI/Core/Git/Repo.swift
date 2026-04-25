@@ -30,7 +30,7 @@ struct Repo: ParsableCommand {
 
         if !hasGit {
             warn("No git repository found.")
-            info("Run  agent-manager repo --init <path>  to create one.")
+            info("Run  cli-manager repo --init <path>  to create one.")
             print()
             return
         }
@@ -102,13 +102,13 @@ struct Repo: ParsableCommand {
     private func writeRepoConfig(_ repoURL: URL) throws {
         let configDir = home
             .appendingPathComponent(".config")
-            .appendingPathComponent("agent-manager")
+            .appendingPathComponent("cli-manager")
         try fm.createDirectory(at: configDir, withIntermediateDirectories: true)
         try repoURL.path.write(
             to: configDir.appendingPathComponent("repo"),
             atomically: true,
             encoding: .utf8
         )
-        ok("Config saved  \(gray)~/.config/agent-manager/repo\(reset)")
+        ok("Config saved  \(gray)~/.config/cli-manager/repo\(reset)")
     }
 }

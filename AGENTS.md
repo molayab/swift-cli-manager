@@ -4,7 +4,7 @@ This file provides guidance to AI agents working in this repository.
 
 ## What This Project Does
 
-`agent-manager` is a CLI tool that manages AI agent skills and slash commands across multiple agents (Claude Code, Cursor, Windsurf, Gemini CLI, etc.) using a single git repository as the source of truth. It creates symlinks from each agent's config directory into this repo so one update propagates everywhere.
+`cli-manager` is a CLI tool that manages AI agent skills and slash commands across multiple agents (Claude Code, Cursor, Windsurf, Gemini CLI, etc.) using a single git repository as the source of truth. It creates symlinks from each agent's config directory into this repo so one update propagates everywhere.
 
 ## Build & Test Commands
 
@@ -20,20 +20,20 @@ swiftlint lint --quiet Sources/                          # Lint
 
 ### Repository Discovery
 The binary locates this repo via a 3-step fallback (in `FileManager+Helpers.swift`):
-1. `AGENT_MANAGER_REPO` environment variable
-2. `~/.config/agent-manager/repo` config file (written by install.py)
+1. `CLI_MANAGER_REPO` environment variable
+2. `~/.config/cli-manager/repo` config file (written by install.py)
 3. Walk-up search from CWD looking for `Package.swift`
 
 ### Key Globals (`FileManager+Helpers.swift`)
 `fm`, `home`, `repoRoot`, `skillsDir`, `commandsDir`, `dotfilesDir` — used throughout all CLI commands.
 
-### CLI Structure (`Sources/AgentManager/CLI/`)
+### CLI Structure (`Sources/CLIManager/CLI/`)
 - **`skill/`** — 8 subcommands: list, new, activate, deactivate, install, status, private
 - **`command/`** — 8 subcommands: list, new, activate, deactivate, import, status, private
 - **`dotfile/`** — 6 subcommands: list, link, unlink, new, status, private
 - **`Core/`** — clean (dead symlinks), sync (copies→symlinks), git push/pull/repo init
 
-### Models (`Sources/AgentManager/Library/Models/`)
+### Models (`Sources/CLIManager/Library/Models/`)
 - `SkillModel` — loads from `skills/<slug>/SKILL.md`, reads YAML frontmatter
 - `CommandModel` — loads from `commands/<slug>.md`, supports Markdown and TOML agent formats
 - `DotfileModel` — loads from `dotfiles/<slug>/DOTFILE.md`, reads YAML frontmatter

@@ -140,7 +140,7 @@ struct SkillInstall: AsyncParsableCommand {
     private func fetch(_ url: URL) async throws -> Data {
         var request = URLRequest(url: url, timeoutInterval: 15)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("agent-manager/1.0.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("cli-manager/1.0.0", forHTTPHeaderField: "User-Agent")
         if let token = ProcessInfo.processInfo.environment["GITHUB_TOKEN"] {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }

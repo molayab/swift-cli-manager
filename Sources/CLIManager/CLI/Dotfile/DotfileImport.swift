@@ -117,7 +117,7 @@ struct DotfileImport: ParsableCommand {
             try linkImported(selected)
         } else {
             print()
-            info("Run  \(bold)agent-manager dotfile link\(reset)  to activate symlinks.")
+            info("Run  \(bold)cli-manager dotfile link\(reset)  to activate symlinks.")
         }
     }
 
@@ -151,7 +151,7 @@ struct DotfileImport: ParsableCommand {
 
         # \(candidate.name)
 
-        Managed by agent-manager. Edit \(candidate.fileName) directly.
+        Managed by cli-manager. Edit \(candidate.fileName) directly.
         """
 
         try fm.createDirectory(at: destDir, withIntermediateDirectories: true)

@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 
-@testable import agent_manager
+@testable import cli_manager
 
 /// Uses a class (not a struct) so `deinit` can remove the temporary directory after each test.
 /// Swift Testing instantiates a fresh object per test method, giving full isolation.
@@ -11,7 +11,7 @@ final class FileManagerHelpersTests {
 
     init() throws {
         tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("AgentManagerTests-\(UUID().uuidString)")
+            .appendingPathComponent("CLIManagerTests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
     }
 

@@ -14,7 +14,7 @@ func expandingTilde(in path: String) -> String {
 
 func findRepoRoot() -> URL {
     // 1. Explicit environment override — useful in CI or multi-repo setups.
-    if let envPath = ProcessInfo.processInfo.environment["AGENT_MANAGER_REPO"] {
+    if let envPath = ProcessInfo.processInfo.environment["CLI_MANAGER_REPO"] {
         let url = URL(fileURLWithPath: expandingTilde(in: envPath))
         if fm.fileExists(atPath: url.path) {
             return url
@@ -24,7 +24,7 @@ func findRepoRoot() -> URL {
     // 2. Config file written by install.sh — the primary path for installed binaries.
     let configFile = home
         .appendingPathComponent(".config")
-        .appendingPathComponent("agent-manager")
+        .appendingPathComponent("cli-manager")
         .appendingPathComponent("repo")
     if let saved = try? String(contentsOf: configFile, encoding: .utf8) {
         let trimmed = saved.trimmingCharacters(in: .whitespacesAndNewlines)

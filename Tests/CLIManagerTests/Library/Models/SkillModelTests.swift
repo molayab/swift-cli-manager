@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 
-@testable import agent_manager
+@testable import cli_manager
 
 struct SkillModelTests {
 

@@ -53,7 +53,7 @@ struct DotfileNew: ParsableCommand {
 
         # \(resolvedName)
 
-        Managed by agent-manager. Edit \(fileName) directly.
+        Managed by cli-manager. Edit \(fileName) directly.
         """
 
         try fm.createDirectory(at: dest, withIntermediateDirectories: true)
@@ -65,6 +65,6 @@ struct DotfileNew: ParsableCommand {
         ok("Created  \(gray)dotfiles/\(slug)/DOTFILE.md\(reset)")
         ok("Created  \(gray)dotfiles/\(slug)/\(fileName)\(reset)  \(gray)(empty placeholder)\(reset)")
         info("Edit dotfiles/\(slug)/\(fileName), then run:")
-        info("  agent-manager dotfile link --dotfile \(slug)")
+        info("  cli-manager dotfile link --dotfile \(slug)")
     }
 }

@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""agent-manager installer
+"""cli-manager installer
 
-Installs agent-manager either by building from source (default) or by
+Installs cli-manager either by building from source (default) or by
 downloading a pre-compiled binary from GitHub Releases.
 
 Usage:
   python3 install.py                        Build from source (requires Swift)
   python3 install.py --binary               Download a pre-compiled binary
   python3 install.py --binary --version v1.2.0
-  python3 install.py --local                Install to ~/.config/agent-manager/bin
+  python3 install.py --local                Install to ~/.config/cli-manager/bin
   python3 install.py --global               Install to /usr/local/bin
 
 Options:
   --binary            Download a pre-compiled binary from GitHub Releases
   --version <tag>     Pin to a specific release tag (requires --binary)
-  --local             Install to ~/.config/agent-manager/bin (mirrors quickinstall.py default)
+  --local             Install to ~/.config/cli-manager/bin (mirrors quickinstall.py default)
   --global            Install to /usr/local/bin instead of ./bin
 """
 
@@ -49,7 +49,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="agent-manager installer",
+        description="cli-manager installer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -67,7 +67,7 @@ def parse_args() -> argparse.Namespace:
         "--local",
         dest="local_install",
         action="store_true",
-        help="Install to ~/.config/agent-manager/bin (mirrors quickinstall.py default)",
+        help="Install to ~/.config/cli-manager/bin (mirrors quickinstall.py default)",
     )
     parser.add_argument(
         "--global",
@@ -85,7 +85,7 @@ def copy_to_destination(src: Path, local_install: bool, global_install: bool) ->
     global_bin = Path("/usr/local/bin")
 
     if global_install:
-        dest = global_bin / "agent-manager"
+        dest = global_bin / "cli-manager"
         info(f"Installing to {BOLD}{dest}{RESET}")
         if os.access(global_bin, os.W_OK):
             shutil.copy2(src, dest)
@@ -95,35 +95,35 @@ def copy_to_destination(src: Path, local_install: bool, global_install: bool) ->
             subprocess.run(["sudo", "cp", str(src), str(dest)], check=True)
             subprocess.run(["sudo", "chmod", "+x", str(dest)], check=True)
         write_repo_config(SCRIPT_DIR)
-        ok(f"Installed.  Run: {BOLD}agent-manager{RESET}")
+        ok(f"Installed.  Run: {BOLD}cli-manager{RESET}")
     elif local_install:
-        bin_dir = Path.home() / ".config" / "agent-manager" / "bin"
+        bin_dir = Path.home() / ".config" / "cli-manager" / "bin"
         bin_dir.mkdir(parents=True, exist_ok=True)
-        dest = bin_dir / "agent-manager"
+        dest = bin_dir / "cli-manager"
         shutil.copy2(src, dest)
         dest.chmod(0o755)
         write_repo_config(SCRIPT_DIR)
         ok(f"Installed.  {GRAY}{dest}{RESET}")
-        info(f"Add {BOLD}{bin_dir}{RESET} to your PATH to run as {BOLD}agent-manager{RESET}")
+        info(f"Add {BOLD}{bin_dir}{RESET} to your PATH to run as {BOLD}cli-manager{RESET}")
     else:
         bin_dir = SCRIPT_DIR / "bin"
         bin_dir.mkdir(exist_ok=True)
-        dest = bin_dir / "agent-manager"
+        dest = bin_dir / "cli-manager"
         shutil.copy2(src, dest)
         dest.chmod(0o755)
         write_repo_config(SCRIPT_DIR)
-        ok(f"Installed.  Run: {BOLD}./bin/agent-manager{RESET}")
-        info(f"Or add {BOLD}{bin_dir}{RESET} to your PATH to run as {BOLD}agent-manager{RESET}")
+        ok(f"Installed.  Run: {BOLD}./bin/cli-manager{RESET}")
+        info(f"Or add {BOLD}{bin_dir}{RESET} to your PATH to run as {BOLD}cli-manager{RESET}")
 
 
 # ── Install from GitHub ────────────────────────────────────────────────────────
 
 def install_from_github(version: str, local_install: bool, global_install: bool) -> None:
     os_name, arch = detect_platform()
-    asset_name = f"agent-manager-{os_name}-{arch}"
+    asset_name = f"cli-manager-{os_name}-{arch}"
 
     print()
-    print(f"{BOLD}Downloading agent-manager…{RESET}  {GRAY}{GITHUB_REPO}{RESET}")
+    print(f"{BOLD}Downloading cli-manager…{RESET}  {GRAY}{GITHUB_REPO}{RESET}")
     print()
     info("Fetching release metadata…")
 
@@ -163,7 +163,7 @@ def install_from_github(version: str, local_install: bool, global_install: bool)
 
 # ── Build from source ──────────────────────────────────────────────────────────
 
-APP_SWIFT = SCRIPT_DIR / "Sources" / "AgentManager" / "App.swift"
+APP_SWIFT = SCRIPT_DIR / "Sources" / "CLIManager" / "App.swift"
 _VERSION_RE = re.compile(r'(version:\s*")([^"]+)(")')
 
 
@@ -196,7 +196,7 @@ def install_from_source(local_install: bool, global_install: bool) -> None:
     build_date = datetime.now().strftime("%Y/%m/%d-%H:%M")
 
     print()
-    print(f"{BOLD}Building agent-manager…{RESET}  {GRAY}{swift_version}{RESET}")
+    print(f"{BOLD}Building cli-manager…{RESET}  {GRAY}{swift_version}{RESET}")
     print()
 
     original = stamp_version(build_date)
@@ -218,7 +218,7 @@ def install_from_source(local_install: bool, global_install: bool) -> None:
     if process.returncode != 0:
         fail("Build failed.")
 
-    binary = SCRIPT_DIR / ".build" / "release" / "agent-manager"
+    binary = SCRIPT_DIR / ".build" / "release" / "cli-manager"
     if not binary.exists():
         fail(f"Build succeeded but binary not found at {binary}")
 
