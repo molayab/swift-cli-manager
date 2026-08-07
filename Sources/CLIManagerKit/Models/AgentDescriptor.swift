@@ -38,8 +38,11 @@ public struct AgentDescriptor: Sendable, Identifiable {
 
 /// The canonical set of agents this tool supports. Single source of truth for both skill
 /// targets and command targets — kept as one list so an agent's identity (id, name) is
-/// defined exactly once.
-public let allAgentDescriptors: [AgentDescriptor] = [
+/// defined exactly once. Computed on every access (not cached) since each entry's paths are
+/// derived from `home`, which itself re-reads a `HOME` override on every access — otherwise a
+/// test or embedding app that sets `HOME` after this was first read would see stale paths.
+public var allAgentDescriptors: [AgentDescriptor] {
+    [
     .init(
         id: "opencode", name: "OpenCode",
         skillsPath: home.appendingPathComponent(".config/opencode/skills"),
@@ -82,7 +85,8 @@ public let allAgentDescriptors: [AgentDescriptor] = [
         commandsPath: nil,
         commandFormat: .markdown
     )
-]
+    ]
+}
 
 extension AgentDescriptor {
     /// Agents whose directory for `kind` already exists on disk.
