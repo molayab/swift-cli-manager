@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct CommandList: ParsableCommand {
@@ -8,13 +9,13 @@ struct CommandList: ParsableCommand {
     )
 
     func run() throws {
-        let cmds = UserCommandModel.loadCommands()
+        let cmds = ManagedItem.load(.command).items
         guard !cmds.isEmpty else {
             warn("No commands found in commands/")
             return
         }
 
-        let agents = CommandModel.detectedCommandAgents()
+        let agents = AgentDescriptor.detected(for: .command)
         print("\n\(bold)Commands\(reset) \(gray)(\(cmds.count))\(reset)\n")
         for cmd in cmds {
             let privTag = cmd.isPrivate ? " \(yellow)(private)\(reset)" : ""
@@ -22,16 +23,23 @@ struct CommandList: ParsableCommand {
             if !cmd.description.isEmpty { print("  \(dim)\(cmd.description)\(reset)") }
 
             if !agents.isEmpty {
-                let activeIn = agents.filter {
-                    fm.fileExists(atPath: $0.path.appendingPathComponent("\(cmd.id).\($0.fileExtension)").path)
+                let activeIn: [(agent: AgentDescriptor, dest: URL)] = agents.compactMap { agent in
+                    guard let path = agent.commandsPath else {
+                        return nil
+                    }
+                    let dest = path.appendingPathComponent("\(cmd.id).\(agent.commandFileExtension)")
+                    guard fm.fileExists(atPath: dest.path) else {
+                        return nil
+                    }
+                    return (agent, dest)
                 }
                 if activeIn.isEmpty {
                     print("  \(gray)not activated\(reset)")
                 } else {
-                    let names = activeIn.map { agent -> String in
-                        let dest = agent.path.appendingPathComponent("\(cmd.id).\(agent.fileExtension)")
-                        let tag  = (agent.format == .markdown && isSymlink(dest)) ? "" : " \(yellow)(copy)\(reset)"
-                        return "\(green)●\(reset) \(agent.name)\(tag)"
+                    let names = activeIn.map { entry -> String in
+                        let tag = (entry.agent.commandFormat == .markdown && isSymlink(entry.dest))
+                            ? "" : " \(yellow)(copy)\(reset)"
+                        return "\(green)●\(reset) \(entry.agent.name)\(tag)"
                     }.joined(separator: "  ")
                     print("  \(names)")
                 }

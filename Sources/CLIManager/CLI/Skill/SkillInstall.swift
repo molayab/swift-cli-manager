@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking

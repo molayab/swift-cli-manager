@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct Clean: ParsableCommand {
@@ -16,16 +17,17 @@ struct Clean: ParsableCommand {
         var totalDead = 0
         var totalRemoved = 0
 
-        for agent in allAgents {
-            let (dead, removed) = try scanDir(agent.path, label: "\(agent.name) (skills)")
-            totalDead += dead
-            totalRemoved += removed
-        }
-
-        for agent in CommandModel.allCommandAgents {
-            let (dead, removed) = try scanDir(agent.path, label: "\(agent.name) (commands)")
-            totalDead += dead
-            totalRemoved += removed
+        for agent in allAgentDescriptors {
+            if let skillsPath = agent.skillsPath {
+                let (dead, removed) = try scanDir(skillsPath, label: "\(agent.name) (skills)")
+                totalDead += dead
+                totalRemoved += removed
+            }
+            if let commandsPath = agent.commandsPath {
+                let (dead, removed) = try scanDir(commandsPath, label: "\(agent.name) (commands)")
+                totalDead += dead
+                totalRemoved += removed
+            }
         }
 
         print()

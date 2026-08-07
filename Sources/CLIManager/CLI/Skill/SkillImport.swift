@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct SkillImport: ParsableCommand {
@@ -14,18 +15,20 @@ struct SkillImport: ParsableCommand {
     var force = false
 
     func run() throws {
-        let targets: [Agent]
+        let skillAgents = allAgentDescriptors.filter { $0.skillsPath != nil }
+
+        let targets: [AgentDescriptor]
         if agent.isEmpty {
-            let detected = allAgents.filter { isDirectory($0.path) }
+            let detected = skillAgents.filter { $0.skillsPath.map(isDirectory) == true }
             guard !detected.isEmpty else {
                 warn("No skill agents detected on this machine.")
-                info("Use --agent <id>. Available: \(allAgents.map(\.id).joined(separator: ", "))")
+                info("Use --agent <id>. Available: \(skillAgents.map(\.id).joined(separator: ", "))")
                 return
             }
             targets = selectInteractive(prompt: "Select agents to import from", items: detected, display: \.name)
         } else {
             targets = agent.compactMap { agentID in
-                guard let match = allAgents.first(where: { $0.id == agentID }) else {
+                guard let match = skillAgents.first(where: { $0.id == agentID }) else {
                     warn("Unknown agent: \(agentID)")
                     return nil
                 }
@@ -42,19 +45,19 @@ struct SkillImport: ParsableCommand {
         print("\n\(bold)Importing skills → \(skillsDir.path)\(reset)\n")
 
         for target in targets {
-            print("\(bold)\(target.name)\(reset)  \(gray)\(target.path.path)\(reset)")
+            print("\(bold)\(target.name)\(reset)  \(gray)\(target.skillsPath?.path ?? "")\(reset)")
             try importSkills(from: target)
             print()
         }
     }
 
-    private func importSkills(from agent: Agent) throws {
-        guard isDirectory(agent.path) else {
+    private func importSkills(from agent: AgentDescriptor) throws {
+        guard let agentPath = agent.skillsPath, isDirectory(agentPath) else {
             warn("  \(agent.name) skills directory not found — skipping.")
             return
         }
 
-        let resolvedPath = agent.path.resolvingSymlinksInPath()
+        let resolvedPath = agentPath.resolvingSymlinksInPath()
         let entries = (try? fm.contentsOfDirectory(
             at: resolvedPath,
             includingPropertiesForKeys: [.isDirectoryKey]

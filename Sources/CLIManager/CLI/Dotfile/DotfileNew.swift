@@ -4,6 +4,7 @@
 @preconcurrency import Glibc
 #endif
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct DotfileNew: ParsableCommand {

@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct CommandImport: ParsableCommand {
@@ -14,11 +15,11 @@ struct CommandImport: ParsableCommand {
     var force = false
 
     func run() throws {
-        let markdownAgents = CommandModel.allCommandAgents.filter { $0.format == .markdown }
+        let markdownAgents = allAgentDescriptors.filter { $0.commandsPath != nil && $0.commandFormat == .markdown }
 
-        let targets: [CommandModel]
+        let targets: [AgentDescriptor]
         if agent.isEmpty {
-            let detected = markdownAgents.filter { isDirectory($0.path) }
+            let detected = markdownAgents.filter { $0.commandsPath.map(isDirectory) == true }
             guard !detected.isEmpty else {
                 warn("No command agents detected on this machine.")
                 info("Use --agent <id>. Available: \(markdownAgents.map(\.id).joined(separator: ", "))")
@@ -44,19 +45,19 @@ struct CommandImport: ParsableCommand {
         print("\n\(bold)Importing commands → \(commandsDir.path)\(reset)\n")
 
         for target in targets {
-            print("\(bold)\(target.name)\(reset)  \(gray)\(target.path.path)\(reset)")
+            print("\(bold)\(target.name)\(reset)  \(gray)\(target.commandsPath?.path ?? "")\(reset)")
             try importCommands(from: target)
             print()
         }
     }
 
-    private func importCommands(from agent: CommandModel) throws {
-        guard isDirectory(agent.path) else {
+    private func importCommands(from agent: AgentDescriptor) throws {
+        guard let agentPath = agent.commandsPath, isDirectory(agentPath) else {
             warn("  \(agent.name) commands directory not found — skipping.")
             return
         }
 
-        let resolvedPath = agent.path.resolvingSymlinksInPath()
+        let resolvedPath = agentPath.resolvingSymlinksInPath()
         let entries = try fm.contentsOfDirectory(
             at: resolvedPath,
             includingPropertiesForKeys: nil

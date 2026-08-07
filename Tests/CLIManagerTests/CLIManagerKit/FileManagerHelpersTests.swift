@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 
-@testable import cli_manager
+@testable import CLIManagerKit
 
 /// Uses a class (not a struct) so `deinit` can remove the temporary directory after each test.
 /// Swift Testing instantiates a fresh object per test method, giving full isolation.

@@ -1,6 +1,6 @@
 import Testing
 
-@testable import cli_manager
+@testable import CLIManagerKit
 
 struct FrontmatterTests {
 

@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct DotfileStatus: ParsableCommand {
@@ -8,7 +9,7 @@ struct DotfileStatus: ParsableCommand {
     )
 
     func run() throws {
-        let dotfiles = DotfileModel.loadDotfiles()
+        let dotfiles = ManagedItem.load(.dotfile).items
         print("\n\(bold)Status\(reset)\n")
         print("  \(bold)Repo:\(reset)      \(gray)\(repoRoot.path)\(reset)")
         print("  \(bold)Dotfiles:\(reset) \(dotfiles.count)\n")
@@ -17,7 +18,8 @@ struct DotfileStatus: ParsableCommand {
             let indicator = dotfile.isLinked ? "\(green)●\(reset)" : "\(gray)○\(reset)"
             let privTag = dotfile.isPrivate ? "  \(yellow)(private)\(reset)" : ""
             let status = dotfile.isLinked ? "\(green)linked\(reset)" : "\(gray)not linked\(reset)"
-            print("  \(indicator) \(bold)\(dotfile.name)\(reset)\(privTag)  \(gray)\(dotfile.link)\(reset)  \(status)")
+            let link = dotfile.dotfileLink ?? ""
+            print("  \(indicator) \(bold)\(dotfile.name)\(reset)\(privTag)  \(gray)\(link)\(reset)  \(status)")
         }
         print()
     }

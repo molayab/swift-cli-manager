@@ -1,13 +1,13 @@
 import Foundation
 
-enum GitRunner {
+public enum GitRunner {
     @discardableResult
-    static func run(_ args: String...) -> (output: String, exitCode: Int32) {
+    public static func run(_ args: String...) -> (output: String, exitCode: Int32) {
         runIn(repoRoot, args)
     }
 
     @discardableResult
-    static func runIn(_ directory: URL, _ args: String...) -> (output: String, exitCode: Int32) {
+    public static func runIn(_ directory: URL, _ args: String...) -> (output: String, exitCode: Int32) {
         runIn(directory, args)
     }
 
