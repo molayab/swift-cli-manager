@@ -1,15 +1,25 @@
 import Foundation
 
 public nonisolated(unsafe) let fm = FileManager.default
-public let home = URL(fileURLWithPath: NSHomeDirectory())
+
+/// The user's home directory. Honors a `HOME` environment override — set by tests, sandboxes,
+/// or a caller that wants to point this tool at a scratch directory instead of the real one —
+/// falling back to `NSHomeDirectory()`, which does *not* read `HOME` itself on macOS. Computed
+/// fresh on every access (not cached) so an override taking effect mid-process is picked up
+/// immediately, the same way `repoRoot` already re-resolves per `findRepoRoot()` call.
+public var home: URL {
+    if let override = ProcessInfo.processInfo.environment["HOME"], !override.isEmpty {
+        return URL(fileURLWithPath: override)
+    }
+    return URL(fileURLWithPath: NSHomeDirectory())
+}
 
 /// Expands a leading `~` to the current user's home directory.
-/// Replaces `(str as NSString).expandingTildeInPath`, which requires the ObjC runtime.
 public func expandingTilde(in path: String) -> String {
     guard path.hasPrefix("~") else {
         return path
     }
-    return NSHomeDirectory() + path.dropFirst()
+    return home.path + path.dropFirst()
 }
 
 public func findRepoRoot() -> URL {
@@ -47,10 +57,13 @@ public func findRepoRoot() -> URL {
     return URL(fileURLWithPath: fm.currentDirectoryPath)
 }
 
-public let repoRoot    = findRepoRoot()
-public let skillsDir   = repoRoot.appendingPathComponent("skills")
-public let commandsDir = repoRoot.appendingPathComponent("commands")
-public let dotfilesDir = repoRoot.appendingPathComponent("dotfiles")
+// Computed on every access, like `home` above, rather than cached at first use — so a test (or
+// any caller) that sets `CLI_MANAGER_REPO`/`HOME` for one operation doesn't leak a stale value
+// into the next.
+public var repoRoot: URL { findRepoRoot() }
+public var skillsDir: URL { repoRoot.appendingPathComponent("skills") }
+public var commandsDir: URL { repoRoot.appendingPathComponent("commands") }
+public var dotfilesDir: URL { repoRoot.appendingPathComponent("dotfiles") }
 
 public func isSymlink(_ url: URL) -> Bool {
     (try? fm.destinationOfSymbolicLink(atPath: url.path)) != nil
