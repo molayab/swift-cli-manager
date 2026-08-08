@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 
 @main
 struct CLI: AsyncParsableCommand {

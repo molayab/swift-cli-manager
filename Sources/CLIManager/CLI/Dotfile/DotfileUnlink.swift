@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct DotfileUnlink: ParsableCommand {
@@ -14,15 +15,15 @@ struct DotfileUnlink: ParsableCommand {
     var dryRun = false
 
     func run() throws {
-        let all = DotfileModel.loadDotfiles()
+        let all = ManagedItem.load(.dotfile).items
         guard !all.isEmpty else {
             fail("No dotfiles found in dotfiles/")
             return
         }
 
-        let selected: [DotfileModel] = dotfile.isEmpty
+        let selected: [ManagedItem] = dotfile.isEmpty
             ? selectInteractive(prompt: "Select dotfiles to unlink", items: all, display: \.name)
-            : DotfileModel.resolveDotfiles(dotfile, from: all)
+            : ManagedItem.resolve(dotfile, from: all)
         guard !selected.isEmpty else {
             fail("No matching dotfiles.")
             return
@@ -36,8 +37,11 @@ struct DotfileUnlink: ParsableCommand {
         }
     }
 
-    private func unlinkDotfile(_ dotfile: DotfileModel) throws {
-        let target = dotfile.linkTarget
+    private func unlinkDotfile(_ dotfile: ManagedItem) throws {
+        guard let target = dotfile.linkTarget else {
+            fail("  \(dotfile.id): not a dotfile item")
+            return
+        }
 
         guard isSymlink(target) else {
             if fm.fileExists(atPath: target.path) {

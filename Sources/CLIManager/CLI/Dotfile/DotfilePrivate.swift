@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct DotfilePrivate: ParsableCommand {
@@ -11,7 +12,7 @@ struct DotfilePrivate: ParsableCommand {
     var name: String
 
     func run() throws {
-        let dotfiles = DotfileModel.loadDotfiles()
+        let dotfiles = ManagedItem.load(.dotfile).items
         guard let dotfile = dotfiles.first(where: { $0.id == name }) else {
             fail("Dotfile '\(name)' not found."); return
         }
@@ -24,15 +25,14 @@ struct DotfilePrivate: ParsableCommand {
             return
         }
 
-        try fm.moveItem(at: dotfile.dir, to: newDir)
+        try fm.moveItem(at: dotfile.location, to: newDir)
 
         // Re-point any existing symlink at linkTarget to the new source file location
-        let linkTarget = dotfile.linkTarget
-        if isSymlink(linkTarget) {
-            let newSource = newDir.appendingPathComponent(dotfile.fileName)
+        if let linkTarget = dotfile.linkTarget, let fileName = dotfile.dotfileFileName, isSymlink(linkTarget) {
+            let newSource = newDir.appendingPathComponent(fileName)
             try fm.removeItem(at: linkTarget)
             try fm.createSymbolicLink(at: linkTarget, withDestinationURL: newSource)
-            info("  Updated symlink at \(dotfile.link)")
+            info("  Updated symlink at \(dotfile.dotfileLink ?? "")")
         }
 
         let state = dotfile.isPrivate ? "public (will be committed)" : "private (git-ignored)"

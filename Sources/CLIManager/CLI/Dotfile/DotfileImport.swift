@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct DotfileImport: ParsableCommand {
@@ -64,9 +65,9 @@ struct DotfileImport: ParsableCommand {
     // ── Run ───────────────────────────────────────────────────────────────────
 
     func run() throws {
-        let tracked = DotfileModel.loadDotfiles()
+        let tracked = ManagedItem.load(.dotfile).items
         let existing = Set(tracked.map { $0.id })
-        let alreadySlugs = Set(tracked.map { $0.link })
+        let alreadySlugs = Set(tracked.compactMap { $0.dotfileLink })
 
         // Find known dotfiles present on disk that are not yet tracked
         var seen = Set<String>()   // deduplicate by slug when multiple paths map to same slug
@@ -127,7 +128,7 @@ struct DotfileImport: ParsableCommand {
     private func linkImported(_ selected: [Candidate]) throws {
         print()
         info("Creating symlinks…")
-        let dotfiles = DotfileModel.loadDotfiles()
+        let dotfiles = ManagedItem.load(.dotfile).items
         for candidate in selected {
             guard let dotfile = dotfiles.first(where: { $0.id == candidate.slug }) else { continue }
             try linkDotfile(dotfile)
@@ -161,9 +162,11 @@ struct DotfileImport: ParsableCommand {
         ok("  \(candidate.slug)  \(gray)← \(candidate.link)\(reset)")
     }
 
-    private func linkDotfile(_ dotfile: DotfileModel) throws {
-        let target = dotfile.linkTarget
-        let source = dotfile.sourceFile
+    private func linkDotfile(_ dotfile: ManagedItem) throws {
+        guard let target = dotfile.linkTarget, let source = dotfile.sourceFile else {
+            fail("  \(dotfile.id): not a dotfile item")
+            return
+        }
 
         guard fm.fileExists(atPath: source.path) else {
             fail("  \(dotfile.id): source missing")
