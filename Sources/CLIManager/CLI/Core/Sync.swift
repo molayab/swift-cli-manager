@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct Sync: ParsableCommand {
@@ -12,12 +13,12 @@ struct Sync: ParsableCommand {
     var dryRun = false
 
     func run() throws {
-        let skills = SkillModel.resolveSkills(filter.skill, from: SkillModel.loadSkills())
+        let skills = ManagedItem.resolve(filter.skill, from: ManagedItem.load(.skill).items)
         guard !skills.isEmpty else {
             fail("No matching skills.")
             return
         }
-        guard let targets = resolveTargets(filter.agent) else {
+        guard let targets = resolveAgentTargets(filter.agent, for: .skill) else {
             return
         }
 
@@ -25,9 +26,10 @@ struct Sync: ParsableCommand {
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")
 
         for agent in targets {
-            print("\(bold)\(agent.name)\(reset)  \(gray)\(agent.path.path)\(reset)")
+            guard let agentPath = agent.skillsPath else { continue }
+            print("\(bold)\(agent.name)\(reset)  \(gray)\(agentPath.path)\(reset)")
             for skill in skills {
-                let dest = agent.path.appendingPathComponent(skill.id)
+                let dest = agentPath.appendingPathComponent(skill.id)
 
                 guard fm.fileExists(atPath: dest.path) else {
                     skip("  \(skill.id)  \(gray)not installed\(reset)")
@@ -44,7 +46,7 @@ struct Sync: ParsableCommand {
                 } else {
                     do {
                         try fm.removeItem(at: dest)
-                        try fm.createSymbolicLink(at: dest, withDestinationURL: skill.dir)
+                        try fm.createSymbolicLink(at: dest, withDestinationURL: skill.location)
                         ok("  \(skill.id)  \(gray)copy → symlink\(reset)")
                     } catch {
                         fail("  \(skill.id): \(error.localizedDescription)")

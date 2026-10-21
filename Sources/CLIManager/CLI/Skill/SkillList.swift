@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct SkillList: ParsableCommand {
@@ -8,13 +9,13 @@ struct SkillList: ParsableCommand {
     )
 
     func run() throws {
-        let skills = SkillModel.loadSkills()
+        let skills = ManagedItem.load(.skill).items
         guard !skills.isEmpty else {
             warn("No skills found in skills/")
             return
         }
 
-        let agents = detectedAgents()
+        let agents = AgentDescriptor.detected(for: .skill)
         print("\n\(bold)Skills\(reset) \(gray)(\(skills.count))\(reset)\n")
         for skill in skills {
             let privTag = skill.isPrivate ? " \(yellow)(private)\(reset)" : ""
@@ -22,16 +23,22 @@ struct SkillList: ParsableCommand {
             if !skill.description.isEmpty { print("  \(dim)\(skill.description)\(reset)") }
 
             if !agents.isEmpty {
-                let activeIn = agents.filter {
-                    fm.fileExists(atPath: $0.path.appendingPathComponent(skill.id).path)
+                let activeIn: [(agent: AgentDescriptor, dest: URL)] = agents.compactMap { agent in
+                    guard let path = agent.skillsPath else {
+                        return nil
+                    }
+                    let dest = path.appendingPathComponent(skill.id)
+                    guard fm.fileExists(atPath: dest.path) else {
+                        return nil
+                    }
+                    return (agent, dest)
                 }
                 if activeIn.isEmpty {
                     print("  \(gray)not activated\(reset)")
                 } else {
-                    let names = activeIn.map { agent in
-                        let dest = agent.path.appendingPathComponent(skill.id)
-                        let tag = isSymlink(dest) ? "" : " \(yellow)(copy)\(reset)"
-                        return "\(green)●\(reset) \(agent.name)\(tag)"
+                    let names = activeIn.map { entry -> String in
+                        let tag = isSymlink(entry.dest) ? "" : " \(yellow)(copy)\(reset)"
+                        return "\(green)●\(reset) \(entry.agent.name)\(tag)"
                     }.joined(separator: "  ")
                     print("  \(names)")
                 }

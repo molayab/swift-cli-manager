@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct SkillActivate: ParsableCommand {
@@ -13,21 +14,21 @@ struct SkillActivate: ParsableCommand {
     var dryRun = false
 
     func run() throws {
-        let allSkills = SkillModel.loadSkills()
+        let allSkills = ManagedItem.load(.skill).items
         guard !allSkills.isEmpty else {
             fail("No skills found in skills/")
             return
         }
 
-        let skills: [SkillModel] = filter.skill.isEmpty
+        let skills: [ManagedItem] = filter.skill.isEmpty
             ? selectInteractive(prompt: "Select skills to activate", items: allSkills, display: \.name)
-        : SkillModel.resolveSkills(filter.skill, from: allSkills)
+        : ManagedItem.resolve(filter.skill, from: allSkills)
         guard !skills.isEmpty else {
             fail("No matching skills.")
             return
         }
 
-        guard let targets = selectAgentTargets(filter: filter.agent) else {
+        guard let targets = selectAgentTargets(filter: filter.agent, for: .skill) else {
             return
         }
 
@@ -35,26 +36,27 @@ struct SkillActivate: ParsableCommand {
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")
 
         for agent in targets {
-            print("\(bold)\(agent.name)\(reset)  \(gray)\(agent.path.path)\(reset)")
-            if !dryRun && !fm.fileExists(atPath: agent.path.path) {
-                try fm.createDirectory(at: agent.path, withIntermediateDirectories: true)
+            guard let agentPath = agent.skillsPath else { continue }
+            print("\(bold)\(agent.name)\(reset)  \(gray)\(agentPath.path)\(reset)")
+            if !dryRun && !fm.fileExists(atPath: agentPath.path) {
+                try fm.createDirectory(at: agentPath, withIntermediateDirectories: true)
             }
             for skill in skills {
-                try activateSkill(skill, into: agent)
+                try activateSkill(skill, at: agentPath)
             }
             print()
         }
     }
 
-    private func activateSkill(_ skill: SkillModel, into agent: Agent) throws {
-        let dest = agent.path.appendingPathComponent(skill.id)
+    private func activateSkill(_ skill: ManagedItem, at agentPath: URL) throws {
+        let dest = agentPath.appendingPathComponent(skill.id)
         if fm.fileExists(atPath: dest.path) {
             skip("  \(skill.id)  \(gray)already active (\(isSymlink(dest) ? "symlink" : "copy"))\(reset)")
         } else if dryRun {
             ok("  \(skill.id)  \(gray)→ would symlink\(reset)")
         } else {
             do {
-                try fm.createSymbolicLink(at: dest, withDestinationURL: skill.dir)
+                try fm.createSymbolicLink(at: dest, withDestinationURL: skill.location)
                 ok("  \(skill.id)")
             } catch {
                 fail("  \(skill.id): \(error.localizedDescription)")

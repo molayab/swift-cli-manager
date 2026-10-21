@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct SkillDeactivate: ParsableCommand {
@@ -13,21 +14,21 @@ struct SkillDeactivate: ParsableCommand {
     var dryRun = false
 
     func run() throws {
-        let allSkills = SkillModel.loadSkills()
+        let allSkills = ManagedItem.load(.skill).items
         guard !allSkills.isEmpty else {
             fail("No skills found in skills/")
             return
         }
 
-        let skills: [SkillModel] = filter.skill.isEmpty
+        let skills: [ManagedItem] = filter.skill.isEmpty
             ? selectInteractive(prompt: "Select skills to deactivate", items: allSkills, display: \.name)
-        : SkillModel.resolveSkills(filter.skill, from: allSkills)
+        : ManagedItem.resolve(filter.skill, from: allSkills)
         guard !skills.isEmpty else {
             fail("No matching skills.")
             return
         }
 
-        guard let targets = selectAgentTargets(filter: filter.agent) else {
+        guard let targets = selectAgentTargets(filter: filter.agent, for: .skill) else {
             return
         }
 
@@ -35,16 +36,17 @@ struct SkillDeactivate: ParsableCommand {
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")
 
         for agent in targets {
-            print("\(bold)\(agent.name)\(reset)  \(gray)\(agent.path.path)\(reset)")
+            guard let agentPath = agent.skillsPath else { continue }
+            print("\(bold)\(agent.name)\(reset)  \(gray)\(agentPath.path)\(reset)")
             for skill in skills {
-                deactivateSkill(skill, from: agent)
+                deactivateSkill(skill, at: agentPath)
             }
             print()
         }
     }
 
-    private func deactivateSkill(_ skill: SkillModel, from agent: Agent) {
-        let dest = agent.path.appendingPathComponent(skill.id)
+    private func deactivateSkill(_ skill: ManagedItem, at agentPath: URL) {
+        let dest = agentPath.appendingPathComponent(skill.id)
         guard fm.fileExists(atPath: dest.path) else {
             skip("  \(skill.id)  \(gray)not active\(reset)"); return
         }

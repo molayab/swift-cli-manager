@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct CommandDeactivate: ParsableCommand {
@@ -17,21 +18,21 @@ struct CommandDeactivate: ParsableCommand {
     var dryRun = false
 
     func run() throws {
-        let allCmds = UserCommandModel.loadCommands()
+        let allCmds = ManagedItem.load(.command).items
         guard !allCmds.isEmpty else {
             fail("No commands found in commands/")
             return
         }
 
-        let cmds: [UserCommandModel] = command.isEmpty
+        let cmds: [ManagedItem] = command.isEmpty
             ? selectInteractive(prompt: "Select commands to deactivate", items: allCmds, display: { "/\($0.id)" })
-        : UserCommandModel.resolveUserCommands(command, from: allCmds)
+        : ManagedItem.resolve(command, from: allCmds)
         guard !cmds.isEmpty else {
             fail("No matching commands.")
             return
         }
 
-        guard let targets = CommandModel.selectTargets(agent) else {
+        guard let targets = selectAgentTargets(filter: agent, for: .command) else {
             return
         }
 
@@ -39,16 +40,17 @@ struct CommandDeactivate: ParsableCommand {
             + (dryRun ? "  \(yellow)(dry run)\(reset)" : "") + "\n")
 
         for agent in targets {
-            print("\(bold)\(agent.name)\(reset)  \(gray)\(agent.path.path)\(reset)")
+            guard let agentPath = agent.commandsPath else { continue }
+            print("\(bold)\(agent.name)\(reset)  \(gray)\(agentPath.path)\(reset)")
             for cmd in cmds {
-                deactivateCommand(cmd, from: agent)
+                deactivateCommand(cmd, for: agent, at: agentPath)
             }
             print()
         }
     }
 
-    private func deactivateCommand(_ cmd: UserCommandModel, from agent: CommandModel) {
-        let dest = agent.path.appendingPathComponent("\(cmd.id).\(agent.fileExtension)")
+    private func deactivateCommand(_ cmd: ManagedItem, for agent: AgentDescriptor, at agentPath: URL) {
+        let dest = agentPath.appendingPathComponent("\(cmd.id).\(agent.commandFileExtension)")
         guard fm.fileExists(atPath: dest.path) else {
             skip("  /\(cmd.id)  \(gray)not active\(reset)"); return
         }

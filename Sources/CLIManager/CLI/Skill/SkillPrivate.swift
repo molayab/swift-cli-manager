@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct SkillPrivate: ParsableCommand {
@@ -11,7 +12,7 @@ struct SkillPrivate: ParsableCommand {
     var name: String
 
     func run() throws {
-        let skills = SkillModel.loadSkills()
+        let skills = ManagedItem.load(.skill).items
         guard let skill = skills.first(where: { $0.id == name }) else {
             fail("Skill '\(name)' not found."); return
         }
@@ -23,18 +24,27 @@ struct SkillPrivate: ParsableCommand {
             fail("'\(newDirName)' already exists in skills/ — resolve the conflict first."); return
         }
 
-        try fm.moveItem(at: skill.dir, to: newDir)
+        try fm.moveItem(at: skill.location, to: newDir)
         updateSymlinks(for: skill, newDir: newDir)
 
         let state = skill.isPrivate ? "public (will be committed)" : "private (git-ignored)"
         ok("'\(skill.id)' is now \(state)")
     }
 
-    private func updateSymlinks(for skill: SkillModel, newDir: URL) {
-        relinkSymlinks(
-            agents: allAgents.map { (path: $0.path, name: $0.name) },
+    private func updateSymlinks(for skill: ManagedItem, newDir: URL) {
+        let results = relinkSymlinks(
+            agents: allAgentDescriptors.compactMap { agent in
+                agent.skillsPath.map { (path: $0, name: agent.name) }
+            },
             childName: skill.id,
             to: newDir
         )
+        for result in results {
+            if result.succeeded {
+                info("  \(result.message)")
+            } else {
+                warn("  \(result.message)")
+            }
+        }
     }
 }

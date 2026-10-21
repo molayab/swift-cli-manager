@@ -1,4 +1,5 @@
 import ArgumentParser
+import CLIManagerKit
 import Foundation
 
 struct DotfileList: ParsableCommand {
@@ -8,7 +9,7 @@ struct DotfileList: ParsableCommand {
     )
 
     func run() throws {
-        let dotfiles = DotfileModel.loadDotfiles()
+        let dotfiles = ManagedItem.load(.dotfile).items
         guard !dotfiles.isEmpty else {
             warn("No dotfiles found in dotfiles/")
             return
@@ -19,7 +20,7 @@ struct DotfileList: ParsableCommand {
             let privTag = dotfile.isPrivate ? " \(yellow)(private)\(reset)" : ""
             print("  \(cyan)\(bold)\(dotfile.name)\(reset)\(privTag)")
             if !dotfile.description.isEmpty { print("  \(dim)\(dotfile.description)\(reset)") }
-            print("  \(gray)\(dotfile.link)\(reset)")
+            print("  \(gray)\(dotfile.dotfileLink ?? "")\(reset)")
 
             if dotfile.isLinked {
                 print("  \(green)● linked\(reset)")
